@@ -4,15 +4,17 @@ pipelines:
   branches:
     stage:
       - step:
-          name: Deploy to Stage with Parallel FTP
+          name: Deploy with Parallel FTP (10)
           deployment: Stage
           script:
             - apk add --no-cache lftp
             - >
-              lftp -u $FTP_USER,$FTP_PASSWORD -e "
+              lftp -u "$FTP_USER","$FTP_PASSWORD" -e "
               set ftp:ssl-allow no;
               set net:timeout 10;
-              mirror -R --delete --verbose --parallel=10 
+              set net:max-retries 2;
+              set ftp:parallel-files 10;
+              mirror -R --delete --verbose --parallel=10
               --exclude .git/ 
               --exclude bitbucket-pipelines.yml 
               --exclude .gitignore 
