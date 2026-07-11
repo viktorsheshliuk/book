@@ -4,46 +4,20 @@ pipelines:
   branches:
     stage:
       - step:
-          name: Deploy with Parallel FTP (10)
+          name: Deploy to Stage via Parallel FTP
           deployment: Stage
           script:
             - apk add --no-cache lftp
             - >
-              lftp -u "$FTP_USER","$FTP_PASSWORD" -e "
+              lftp -u $FTP_USER,$FTP_PASSWORD -e "
               set ftp:ssl-allow no;
-              set net:timeout 10;
+              set net:limit-rate 0;
               set net:max-retries 2;
+              set net:timeout 10;
               set ftp:parallel-files 10;
-              mirror -R --delete --verbose --parallel=10
-              --exclude .git/ 
-              --exclude bitbucket-pipelines.yml 
-              --exclude .gitignore 
-              --exclude README.md 
-              --exclude build/ 
-              --exclude robots.txt 
-              --exclude .htaccess 
-              --exclude .htpasswd 
-              --exclude config.php 
-              --exclude admin/config.php 
-              --exclude admin/cyberstore.php 
-              --exclude cyberstore.php 
-              --exclude php.ini 
-              --exclude storage/logs/ 
-              --exclude storage/cache/ 
-              --exclude storage/session/ 
-              --exclude storage/upload/ 
-              --exclude storage/download/ 
-              --exclude storage/modification/ 
-              --exclude storage/exchange1c/ 
-              --exclude storage/geoip/ 
-              --exclude image/ 
-              --exclude vqmod/logs/ 
-              --exclude vqmod/vqcache/ 
-              --exclude install/ 
-              --exclude '.*\.log' 
-              --exclude 'system/.*\.ocmod\.xml' 
-              --exclude '.*\.xml' 
-              ./ $TARGET_DIR;
+              set ftp:parallel-transfer-count 10;
+              set mirror:exclude-regex ^(\.git|bitbucket-pipelines\.yml|\.gitignore|README\.md|build|robots\.txt|\.htaccess|\.htpasswd|config\.php|admin/config\.php|admin/cyberstore\.php|cyberstore\.php|php\.ini|storage/logs/|storage/cache/|storage/session/|storage/upload/|storage/download/|storage/modification/|storage/exchange1c/|storage/geoip/|image/|vqmod/logs/|vqmod/vqcache/|install/|.*\.log|system/.*\.ocmod\.xml|.*\.xml)$;
+              mirror -R --verbose --parallel=10 ./ $TARGET_DIR;
               quit;
               " $FTP_HOST
             - echo "Deployment completed successfully!"
