@@ -3,6 +3,9 @@ config.php
 admin/config.php
 php.ini
 
+cyberstore.php
+admin/cyberstore.php
+
 # Папки с данными
 system/storage/cache/
 system/storage/logs/
