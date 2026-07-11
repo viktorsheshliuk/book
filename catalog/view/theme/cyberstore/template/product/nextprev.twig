@@ -1,0 +1,67 @@
+<div class="nextprevprod btn-group">
+    {% if (products['prev'] is defined) %}
+		<button id="prev-prod-btn" type="button" onclick="location.href='{{ products['prev']['href'] }}'"  class="btn btn-default prev-prod-btn">
+		<svg xmlns="http://www.w3.org/2000/svg" width="28" height="18" fill-rule="evenodd" clip-rule="evenodd"><path d="M2.117 12l7.527 6.235-.644.765-9-7.521 9-7.479.645.764-7.529 6.236h21.884v1h-21.883z"/></svg>
+		<span>{{ products['prev']['name'] }}</span></button>
+	{% endif %}
+    {% if (products['next'] is defined) %}
+		<button id="next-prod-btn" type="button" onclick="location.href='{{ products['next']['href'] }}'" class="btn btn-default next-prod-btn">
+		<svg xmlns="http://www.w3.org/2000/svg" width="28" height="18"  fill-rule="evenodd" clip-rule="evenodd"><path d="M21.883 12l-7.527 6.235.644.765 9-7.521-9-7.479-.645.764 7.529 6.236h-21.884v1h21.883z"/></svg>
+		<span>{{ products['next']['name'] }}</span></button>
+    {% endif %}
+</div>
+<script>
+{% if (products['prev'] is defined) %}
+var prevPopoverProd = {
+    html: true,
+	placement: 'bottom',
+	trigger: 'hover',
+	content: function() {
+		html  = '<div class="popover-pr-image"><img class="img-responsive" src="{{ products['prev']['image'] }}" title="" alt="" /></div>';
+		html += '<div class="popover-pr-name">{{ products['prev']['name'] }}</div>';
+		html += '<div class="price">';
+		html += '	{% if (products['prev']['price']) %}';
+		html += '	  {% if (not products['prev']['special']) %}';
+		html += '		<span>{{ products['prev']['price'] }}</span>';
+		html += '	  {% else %}';
+		html += '		<span class="price-old"><span>{{ products['prev']['price'] }}</span></span> <span class="price-new"><span>{{ products['prev']['special'] }}</span></span>';
+		html += '	  {% endif %}';
+		html += '	{% endif %}';
+		html += '</div>';
+		return html;
+	}
+}
+{% else %}
+var prevPopoverProd = '';
+{% endif %}
+{% if (products['next'] is defined) %}
+var nextPopoverProd = {
+    html: true,
+		placement: 'bottom',
+		trigger: 'hover',
+		content: function() {
+			html  = '<div class="popover-pr-image"><img class="img-responsive" src="{{ products['next']['image'] }}" title="" alt="" /></div>';
+			html += '<div class="popover-pr-name">{{ products['next']['name'] }}</div>';
+			html += '<div class="price">';
+			html += '	{% if (products['next']['price']) %}';
+			html += '	  {% if (not products['next']['special']) %}';
+			html += '		<span>{{ products['next']['price'] }}</span>';
+			html += '	  {% else %}';
+			html += '		<span class="price-old"><span>{{ products['next']['price'] }}</span></span> <span class="price-new"><span>{{ products['next']['special'] }}</span></span>';
+			html += '	  {% endif %}';
+			html += '	{% endif %}';
+			html += '</div>';
+			return html;
+}
+}
+{% else %}
+var nextPopoverProd = '';
+{% endif %}
+{% if (products['prev'] is defined) %}
+$('.prev-prod-btn').popover(prevPopoverProd);
+ {% endif %}
+ {% if (products['next'] is defined) %}
+$('.next-prod-btn').popover(nextPopoverProd);
+{% endif %}
+</script>
+<div class="clearfix"></div>

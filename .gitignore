@@ -1,0 +1,93 @@
+# Конфигурационные файлы
+config.php
+admin/config.php
+php.ini
+
+# Папки с данными
+system/storage/cache/
+system/storage/logs/
+system/storage/session/
+system/storage/download/
+system/storage/tmp/
+image/cache/
+
+# Скрытые файлы
+.htaccess
+.htpasswd
+
+# Системные папки
+vendor/
+.idea/
+.vscode/
+.DS_Store
+
+# Зображення
+image/catalog/*
+image/google_maps/*
+image/googlemarkerclusterer/*
+!image/catalog/index.html
+
+# Кеш зображень
+image/cache/*
+!image/cache/index.html
+
+#################################
+# Статичні системні файли
+#################################
+robots.txt
+robots.txt.bak
+
+#################################
+# Тимчасові та кешовані файли OpenCart
+#################################
+system/storage/session/*
+!system/storage/session/index.html
+!system/storage/session/.htaccess
+
+system/storage/download/*
+!system/storage/download/index.html
+
+system/storage/logs/*
+!system/storage/logs/index.html
+
+system/storage/cache/*
+!system/storage/cache/index.html
+
+system/storage/modification/*
+!system/storage/modification/index.html
+
+system/storage/upload/*
+!system/storage/upload/index.html
+
+#################################
+# Тимчасові та згенеровані файли теми/модулів
+#################################
+catalog/view/theme/*/stylesheet/ocfilter/ocf.cache.*
+
+#################################
+# NPM залежності
+#################################
+node_modules/
+package-lock.json
+yarn.lock
+
+#################################
+# Storage в корені проекту
+#################################
+/storage/cache/*
+!/storage/cache/index.html
+
+/storage/download/*
+!/storage/download/index.html
+
+/storage/logs/*
+!/storage/logs/index.html
+
+/storage/modification/*
+!/storage/modification/index.html
+
+/storage/session/*
+!/storage/session/index.html
+
+/storage/upload/*
+!/storage/upload/index.html

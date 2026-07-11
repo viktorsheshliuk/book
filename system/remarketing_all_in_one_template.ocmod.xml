@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification> 
+	<name>Remarketing All In One Pro Template</name>
+	<code>remarketing_all_in_one_pro_template</code>
+	<version>8.1</version>  
+	<author>Fuck spectre</author>
+	<link></link>
+	<file path="catalog/view/theme/*/template/common/header*.tpl">
+		<operation error="skip">
+			<search><![CDATA[</head>]]></search>
+			<add position="before"><![CDATA[<?php if (!empty($remarketing_head)) echo $remarketing_head; // remarketing ?>]]></add> 
+		</operation>
+		<operation error="skip">
+			<search><![CDATA[<body]]></search>
+			<add position="after"><![CDATA[<?php if (!empty($remarketing_body)) echo $remarketing_body; ?>]]></add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/*/template/common/header*.twig">
+		<operation error="skip">
+			<search><![CDATA[</head>]]></search>
+			<add position="before"><![CDATA[{% if remarketing_head %}{{ remarketing_head }}{% endif %}{# // remarketing #}]]></add>
+		</operation>
+		<operation error="skip">
+			<search><![CDATA[<body]]></search>
+			<add position="after"><![CDATA[{% if remarketing_body %}{{ remarketing_body }}{% endif %}]]></add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/*/template/common/footer*.tpl">
+		<operation error="skip">
+			<search><![CDATA[</body>]]></search>
+			<add position="before"><![CDATA[<?php if (!empty($remarketing_footer)) echo $remarketing_footer; // remarketing ?>]]></add>
+		</operation>
+		<operation error="skip">
+			<search><![CDATA[$.magnificPopup.open({items:{src:"index.php?route=extension/module/aridiusfastorder/success"},]]></search>
+			<add position="replace"><![CDATA[remarketingQuickOrder(a),$.magnificPopup.open({items:{src:"index.php?route=extension/module/aridiusfastorder/success"},]]></add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/*/template/common/footer*.twig">
+		<operation error="skip">
+			<search><![CDATA[</body>]]></search>
+			<add position="before"><![CDATA[{% if remarketing_footer %}{{ remarketing_footer }}{% endif %}{# // remarketing #}]]></add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/*/template/product/*.tpl">
+		<operation error="skip">
+			<search><![CDATA[<?php echo $footer; ?>]]></search>
+			<add position="before"><![CDATA[<?php if (!empty($remarketing_code)) echo $remarketing_code; // remarketing ?>]]></add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/*/template/product/*.twig">
+		<operation error="skip">
+			<search><![CDATA[{{ footer }}]]></search>
+			<add position="before"><![CDATA[{% if remarketing_code %}{{ remarketing_code }}{% endif %}{# // remarketing #}]]></add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/*/template/checkout/simplecheckout_cart.tpl">
+		<operation error="skip">
+			<search><![CDATA[<?php if ($display_header) { ?>]]></search>
+			<add position="before"><![CDATA[<?php if (!empty($facebook_output)) echo $facebook_output; ?><?php if (!empty($ga4_output)) echo $ga4_output; ?><?php if (!empty($tiktok_output)) echo $tiktok_output; ?>]]></add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/*/template/checkout/simplecheckout_cart.twig">
+		<operation error="skip">
+			<search><![CDATA[{% if display_header %}]]></search> 
+			<add position="before"><![CDATA[{% if facebook_output %}{{ facebook_output }}{% endif %}{% if ga4_output %}{{ ga4_output }}{% endif %}{% if tiktok_output %}{{ tiktok_output }}{% endif %}]]></add>
+		</operation>
+	</file>
+	<file path="admin/view/template/sale/order_info.tpl">
+		<operation error="skip">
+			<search><![CDATA[<h3 class="panel-title"><i class="fa fa-info-circle"></i> <?php echo $text_order; ?></h3>]]></search>
+			<add position="before" offset="2"><![CDATA[<?php if (!empty($utm_remarketing_data) || !empty($time_remarketing_data)) { ?><div class="panel panel-default"><div class="panel-heading"><h3 class="panel-title"><span style="color:red"><i class="fa fa-rocket"></i> SP SEO</span> <span style="color:#167d4b">REMARKETING</span> DATA</h3></div><div class="panel-body"><table class="table table-bordered"><thead><tr><td style="width: 50%;" class="text-left">UTM DATA</td><td style="width: 50%;" class="text-left">SEND TIME DATA</td></tr></thead><tbody><tr><td class="text-left"><?php if (!empty($utm_remarketing_data)) { foreach ($utm_remarketing_data as $key => $val) { if (!empty($val)) echo '<b>' . $key . '</b>: ' . $val . '<br>'; }} ?></td><td class="text-left"><?php if (!empty($time_remarketing_data)) { foreach ($time_remarketing_data as $key => $val) { if (!empty($val)) echo '<b>' . $key . '</b>: ' . $val . '<br>'; }} ?></td></tr></tbody></table></div><?php } ?><?php // remarketing ?>]]></add>
+		</operation>
+	</file> 
+	<file path="admin/view/template/sale/order_info.twig">
+		<operation error="skip">
+			<search><![CDATA[<h3 class="panel-title"><i class="fa fa-info-circle"></i> {{ text_order }}</h3>]]></search>
+			<add position="before" offset="2"><![CDATA[{% if utm_remarketing_data or time_remarketing_data %}<div class="panel panel-default"><div class="panel-heading"><h3 class="panel-title"><span style="color:red"><i class="fa fa-rocket"></i> SP SEO</span> <span style="color:#167d4b">REMARKETING</span> DATA</h3></div><div class="panel-body"><table class="table table-bordered"><thead><tr><td style="width: 50%;" class="text-left">UTM DATA</td><td style="width: 50%;" class="text-left">SEND TIME DATA</td></tr></thead><tbody><tr><td class="text-left">{% if utm_remarketing_data %} {% for key, val in utm_remarketing_data %}{% if val != '' %}<b>{{ key }}</b>: {{ val }} <br>{% endif %}{% endfor %}{% endif %}</td><td class="text-left">{% if time_remarketing_data %} {% for key, val in time_remarketing_data %}{% if val != '' %}<b>{{ key }}</b>: {{ val }} <br>{% endif %}{% endfor %}{% endif %}</td></tr></tbody></table></div>{% endif %}{# // remarketing #}]]></add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/*/template/extension/module/{luxshop_newfastorder,chameleon_newfastorder,cyber_newfastorder,upstore_newfastorder}.twig">
+		<operation error="skip">
+			<search><![CDATA[{% if (mask_phone_number != '') %}]]></search>
+			<add position="before"><![CDATA[{% if quick %}<script>remarketingAddToCart?.({{ quick }});</script>{% endif %}]]></add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/*/template/extension/module/{luxshop_newfastorder,chameleon_newfastorder}.tpl">
+		<operation error="skip">
+			<search><![CDATA[<?php if ($mask_phone_number != '') { ?>]]></search>
+			<add position="before"><![CDATA[<?php if (!empty($quick)) { ?><script>remarketingAddToCart?.(<?php echo $quick; ?>)</script><?php } ?>]]></add>
+		</operation>
+    </file>
+	<file path="catalog/view/theme/*/template/extension/module/newfastorder*.twig">
+		<operation error="skip">
+			<search><![CDATA[{% if (mask_phone_number != '') %}]]></search>
+			<add position="before"><![CDATA[{% if quick %}<script>remarketingAddToCart?.({{ quick }});</script>{% endif %}]]></add>
+		</operation>
+    </file>
+	<file path="catalog/view/theme/*/template/extension/module/newfastorder*.tpl">
+		<operation error="skip">
+			<search><![CDATA[<?php if ($mask_phone_number != '') { ?>]]></search>
+			<add position="before" offset="2"><![CDATA[<?php if (!empty($quick)) { ?><script>remarketingAddToCart?.(<?php echo $quick; ?>)</script><?php } ?>]]></add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/*/template/octemplates/module/oct_popup_purchase.twig">
+		<operation error="skip">
+			<search><![CDATA[{% if oct_popup_purchase_data.mask is defined and oct_popup_purchase_data.mask is not empty %}]]></search>
+			<add position="before"><![CDATA[{% if quick %}<script>remarketingAddToCart?.({{ quick }});</script>{% endif %}]]></add>
+		</operation>
+		<operation error="skip">
+			<search><![CDATA[$('.fm-module-btn').attr( "disabled", "disabled" );]]></search>
+			<add position="after"><![CDATA[remarketingQuickOrder?.(json);]]></add>
+		</operation>
+		<operation error="skip">
+			<search><![CDATA[$("#sc-popup-success-text").html(json['success']);]]></search>
+			<add position="after"><![CDATA[remarketingQuickOrder?.(json);]]></add>
+		</operation>
+		<operation error="skip">
+			<search><![CDATA[$('.us-module-btn').attr( "disabled", "disabled" );]]></search>
+			<add position="after"><![CDATA[remarketingQuickOrder?.(json);]]></add>
+		</operation>
+		<operation error="skip">
+			<search><![CDATA[$(".modal-dialog").removeClass("wide");]]></search>
+			<add position="after"><![CDATA[remarketingQuickOrder?.(json);}]]></add>
+		</operation>
+		<operation error="skip">
+			<search><![CDATA[$('#quickOrderModal .modal-dialog').removeClass('wide');]]></search>
+			<add position="after"><![CDATA[remarketingQuickOrder?.(json);]]></add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/*/template/octemplates/module/oct_popup_purchase_byoneclick.twig">
+		<operation error="skip">
+			<search><![CDATA[successOption = '<div class="alert-text-item">' + json['success'] + '</div>';]]></search>
+			<add position="after"><![CDATA[if (typeof remarketing_order_sent === 'undefined') {remarketingQuickOrder?.(json)}]]></add>
+		</operation>
+		<operation error="skip">
+			<search><![CDATA[$(this).attr( "disabled", "disabled" );]]></search> 
+			<add position="after"><![CDATA[remarketingQuickOrder?.(json);remarketing_order_sent = true;]]></add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/*/template/extension/module/uni_quick_order.twig">
+		<operation error="skip">
+			<search><![CDATA[{% if special_timer %}]]></search>
+			<add position="before"><![CDATA[{% if quick %}remarketingAddToCart?.({{ quick }});{% endif %}]]></add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/*/template/revolution/{revpopuporder,revpopupcartquick}.*">
+		<operation error="skip">
+			<search><![CDATA[$('#popup-order-okno .popup-center').html(json['output']);]]></search>
+			<add position="after"><![CDATA[remarketingQuickOrder?.(json);}]]></add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/*/template/extension/module/aridiusfastorder_form.{twig,tpl}">
+		<operation error="skip">
+			<search><![CDATA[$('.fastorder-custf').prepend(result);]]></search>
+			<add position="after"><![CDATA[remarketingQuickOrder?.(json);]]></add>
+		</operation>
+		<operation error="skip">
+			<search><![CDATA[$('#fast_order_popup_success').modal('show');]]></search>
+			<add position="after"><![CDATA[remarketingQuickOrder?.(json);]]></add>
+		</operation>
+	</file> 
+</modification>

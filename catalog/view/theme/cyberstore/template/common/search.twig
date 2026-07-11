@@ -1,0 +1,138 @@
+{% if (show_hc_search == '1') %}
+<script>
+$(document).ready(function() {
+  var category_id_page = $('#content select[name=\'category_id\']').find("option:selected").attr("value");
+  var category_id_html = $('#content select[name=\'category_id\']').find("option:selected").html();
+
+  $("#selected_category").val(category_id_page);
+  $("#category_now").val(category_id_page);
+  $(".category-name").html(category_id_html);
+  $('.select-category').find('.filter-option').html(category_id_html)
+  });
+ </script>
+ {% endif %}
+<div id="searchtop">
+<div id="search" class="input-group {% if (search_word is defined and (search_word is not empty)) %}pt20{% endif %}">
+<input type="text" name="search" value="{{ search }}" placeholder="{{ text_search }}" class="form-control input-lg search-autocomplete" />
+{% if (show_hc_search == '1') %}
+<div class="input-group-btn categories">
+    <button id="change_category" type="button" class="btn btn-search-select dropdown-toggle" data-toggle="dropdown">
+		{% for search_category in categories %} {% if (search_category['category_id'] == filter_category_id) %}{% set text_search_everywhere = search_category['name'] %}{% endif %}{% endfor %}
+		<span class="category-name">{{ text_search_everywhere }}&nbsp;</span>&nbsp;<span class="fa fa-angle-down fa-fw car-down"></span>
+	</button>
+    <ul class="dropdown-menu">
+			<li><a href="#" onclick="return false;" data-idsearch="0">{{ text_search_everywhere }}</a></li>
+			{% for search_category in categories %}
+			<li><a href="#" onclick="return false;" data-idsearch="{{ search_category['category_id'] }}">{{ search_category['name'] }}</a></li>
+
+			{% endfor %}
+		</ul>
+		<input id="selected_category" type="hidden" name="category_id" value="0" />
+
+  </div>
+   {% endif %}
+  <span class="input-group-btn button_search {% if (show_hc_search == '0') %}hc-off{% endif %}">
+    <button type="button" class="btn btn-search"><i class="fa fa-search"></i></button>
+  </span>
+</div>
+{% if (search_word is defined and (search_word is not empty)) %}
+<div id="search_word" class="hidden-xs hidden-sm">{{ text_search_word }}<a>{{ search_word }}</a></div>
+{% endif %}
+</div>
+<script>
+$('#search a').click(function(){
+	$("#selected_category").val($(this).attr('data-idsearch'));
+	$('.category-name').html($(this).html());
+});
+</script>
+{% if (ns_autosearch_data['status'] == '1') %}
+<script>
+$(document).ready(function(){
+	$('#searchtop input[name="search"]').autocompleteSerach({
+		source: function(request, response) {
+			$.ajax({
+				url: 'index.php?route=extension/module/cyber_autosearch/ajaxLiveSearch&filter_name=' +  encodeURIComponent(request),
+				dataType : 'json',
+				success : function(json) {
+					response($.map(json, function(item) {
+						return {
+							label: item.name,
+							name: item.name1,
+							value: item.product_id,
+							model: item.model,
+							stock_status: item.stock_status,
+							image: item.image,
+							manufacturer: item.manufacturer,
+							price: item.price,
+							special: item.special,
+							category: item.category,
+							rating: item.rating,
+							reviews: item.reviews,
+							href:item.href,
+						}
+					}));
+				}
+			});
+		},
+		select : function (ui){
+			return false;
+		},
+		selecta: function(ui) {
+		if(ui.href){
+			location = ui.href;
+		}
+			return false;
+		},
+		focus: function(event, ui) {
+			return false;
+		}
+	});
+});
+
+$(document).on('click', '#top-fixed input[name="search"]', function () {
+	var autoSearchFixed = $('#top-fixed input[name="search"]');
+	var customAutocomplete = null;
+	$('#top-fixed ul.dropdown-menu.autosearch').remove();
+	autoSearchFixed.autocompleteSerach({
+		source: function(request, response) {
+		customAutocomplete = this;
+			$.ajax({
+				url: 'index.php?route=extension/module/cyber_autosearch/ajaxLiveSearch&filter_name=' +  encodeURIComponent(request),
+				dataType : 'json',
+				success : function(json) {
+					response($.map(json, function(item) {
+						return {
+							label: item.name,
+							name: item.name1,
+							value: item.product_id,
+							model: item.model,
+							stock_status: item.stock_status,
+							image: item.image,
+							manufacturer: item.manufacturer,
+							price: item.price,
+							special: item.special,
+							category: item.category,
+							rating: item.rating,
+							reviews: item.reviews,
+							href:item.href,
+						}
+					}));
+				}
+			});
+		},
+		select : function (ui){
+			return false;
+		},
+		selecta: function(ui) {
+		if(ui.href){
+			location = +ui.href;
+		}
+			return false;
+		},
+		focus: function(event, ui) {
+			return false;
+		}
+	});
+});
+</script>
+{% endif %}

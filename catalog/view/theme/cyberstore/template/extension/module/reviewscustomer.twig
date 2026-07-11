@@ -1,0 +1,70 @@
+<div class="container-module">
+{% if (module_header) %} 
+<div class="title-module rc-mod"><span>{{ module_header }}</span></div>
+{% endif %}	
+<div class="product-slider">
+	<div class="reviews review-customer{{ module }}">
+			{% for review in reviews %} 
+			<div class="col-xs-12 col-sm-6 col-md-4 no-slider">
+			<div class="item-review">
+				<div class="rc-center">
+					<div class="rc-media">
+						<a href="{{ review['prod_href'] }}"><img src="{{ lazy_img }}" data-src="{{ review['prod_thumb'] }}" alt="{{ review['prod_name'] }}" title="{{ review['prod_name'] }}" class="img-responsive lazyload" /></a>
+					</div>
+					<div class="rc-media-body">
+						<div class="rs-pr-name"><a href="{{ review['prod_href'] }}">{{ review['prod_name'] }}</a></div>
+						<div class="rating">
+							<span class="rating-box">
+								{% set i = 1 %}{% for i in i..5 %} 
+									{% if (review['rating'] < i) %} 
+									<span class="fa fa-stack"><i class="fa fa-star-o fa-stack-2x"></i></span>
+									{% else %} 
+									<span class="fa fa-stack"><i class="fa fa-star fa-stack-2x"></i><i class="fa fa-star-o fa-stack-2x"></i></span>
+									{% endif %} 
+								{% endfor %} 
+							</span>
+						</div>
+						<div class="review-description">{{ review['description'] }}</div>
+					</div>
+				</div>
+				<div class="rc-bottom">
+					<span class="reviews-author text-left"><i class="fa fa-user" aria-hidden="true"></i>  {{ review['author'] }}</span>
+					<span class="reviews-date text-right">{{ review['date_added'] }}</span>
+				</div>
+			</div>
+			</div>
+		{% endfor %} 
+			
+	</div>
+	<div class="col-sm-12 text-center"><a class="see-all-reviews" href="{{ link_all_reviews }}">{{ text_all_reviews }}</a></div>
+		{% if (status_showmore is defined and status_showmore != 0) %}
+		{% if (nextPage) %}
+			<div class="showmore-review{{ module }} box-showmore"><span class="box-ajax-load"><span data-nextpage="{{ nextPage }}" class="review-ajax-load{{ module }}"><i class="fa fa-repeat" aria-hidden="true"></i> {{ text_showmore }}</span></span></div>
+		{% endif %} 
+		{% endif %} 
+	</div>
+{% if (status_showmore is defined and status_showmore != 0) %}
+<script>
+$(document).on('click', '.review-ajax-load{{ module }}', function () {
+	$.ajax({
+		url: 'index.php?route=extension/module/cyber_reviewscustomer/getNextPage',
+		type: 'post',
+		data: 'page=' + $(this).attr('data-nextpage') + '&module={{ module }}&setting={{ setting }}',
+		dataType: 'html',
+		beforeSend: function() {
+			$('.showmore-review{{ module }} i.fa-repeat').addClass('fa-spin');
+		},
+		complete: function() {
+			$('.showmore-review{{ module }} i.fa-repeat').removeClass('fa-spin');
+		},	
+		success:function(data){
+			$data = $(data);
+			var $products = $data.find('.review-customer{{ module }} > div.col-xs-12');
+			$('.review-customer{{ module }}').append($products);
+			$('.showmore-review{{ module }}').replaceWith($data.find('.showmore-review{{ module }}'));
+		}
+	});
+})
+</script>  
+{% endif %} 
+</div>

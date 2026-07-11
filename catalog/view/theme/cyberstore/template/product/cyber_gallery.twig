@@ -1,0 +1,129 @@
+<div class="galleryPopup">
+  <div class="gallery-prod-name">{{ heading_title }}</div>
+  <style>
+    .slider-main-img-popup {transition:opacity linear 0.3s}
+  </style>
+  <div class="popup-slider-box">
+  <div class="slider-main-img-popup" style="opacity:0">
+    <div class="item">
+        <img class="img-responsive" src="{{ popup }}"/>
+    </div>
+     {% if (gallery_images) %}
+      {% for image in gallery_images %}
+      <div class="item">
+        <img class="img-responsive" src="{{ image['popup'] }}" />
+      </div>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+     {% if (gallery_images) %}
+    <div class="thumb-gallery hidden-xs hidden-sm">
+        <div class="item">
+          <img class="img-responsive thumbnail" src="{{ thumb_min }}" />
+        </div>
+        {% for image in gallery_images %}
+        <div class="item">
+          <img class="img-responsive thumbnail" src="{{ image['thumb'] }}"/>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  <div class="info-product-popup">
+      {% if (review_status) %}
+        <div class="rating info-product">
+        {% set i = 1 %}{% for i in i..5 %}
+          {% if (rating < i) %}
+            <span class="fa fa-stack"><i class="fa fa-star-o fa-stack-1x"></i></span>
+          {% else %}
+            <span class="fa fa-stack"><i class="fa fa-star fa-stack-1x"></i><i class="fa fa-star-o fa-stack-1x"></i></span>
+          {% endif %}
+        {% endfor %}
+          <a href="" onclick="$('a[href=\'#tab-review\']').trigger('click');$('html, body').animate({ scrollTop: $('a[href=\'#tab-review\']').offset().top - 5}, 250); return false;">{{ reviews }}</a>
+        </div>
+      {% endif %}
+      <div class="product-model"><b>{{ text_model }}</b> <span>{{ model }}</span></div>
+      {% if (price) %}
+        <div class="price">
+          {% if (not special) %}
+            {{ price }}
+          {% else %}
+            <span class="price-old">{{ price }}</span> <span class="price-new">{{ special }}</span>
+          {% endif %}
+          {% if (tax) %}
+            <span class="price-tax">{{ text_tax }} {{ tax }}</span>
+          {% endif %}
+        </div>
+      {% endif %}
+      <div class="cart">
+        {% if ((product_quantity <= 0) and disable_cart_button) %}
+          <button type="button" class="btn btn-general" disabled>{% if (change_text_cart_button_out_of_stock == 1 and product_quantity <= 0) %}<span>{{ disable_cart_button_text }}</span>{% else %}<i class="fa fa-shopping-basket"></i> <span>{{ button_cart }}</span>{% endif %}</button>
+        {% else %}
+          <button type="button" onclick='$.magnificPopup.close();$("#button-cart").trigger("click")' class="btn btn-general">{% if (change_text_cart_button_out_of_stock == 1 and product_quantity <= 0) %}<span>{{ disable_cart_button_text }}</span>{% else %}<i class="fa fa-shopping-basket"></i> <span>{{ button_cart }}</span>{% endif %}</button>
+        {% endif %}
+      </div>
+      {% if (show_nsproduct_btn_fastorder == '1') %}
+        <button class="btn btn-fastorder {% if ((product_quantity <= 0) and disable_fastorder_button) %}hidden-quick-order{% endif %}" type="button" onclick="$.magnificPopup.close();setTimeout(function () {fastorder_open({{ product_id}});}, 50);" {% if ((product_quantity <= 0) and disable_fastorder_button) %}disabled{% endif %}>{% if (icon_open_form_send_order != '') %}<i class="{{ icon_open_form_send_order }} fa-fw"></i>{% else %}<i class="fa fa-paper-plane-o fa-fw" aria-hidden="true"></i>{% endif %}<span>{{ config_text_open_form_send_order[lang_id]['config_text_open_form_send_order'] }}</span></button>
+      {% endif %}
+  </div>
+<script src="catalog/view/theme/cyberstore/js/jqzoom/jquery.zoom.min.js" type="text/javascript"></script>
+{% if (gallery_images) %}
+<script src="catalog/view/theme/cyberstore/js/slick/slick.min.js" type="text/javascript"></script>
+<link href="catalog/view/theme/cyberstore/js/slick/slick.css" rel="stylesheet" media="screen" />
+<script>
+setTimeout(function () {
+$('.slider-main-img-popup').slick({
+  draggable: true,
+  centerMode: true,
+  swipeToSlide: false,
+  slidesToShow: 1,
+  slidesToScroll: 1,
+  infinite: false,
+  arrows: true,
+  initialSlide: 0,
+  fade: false,
+  prevArrow: "<div class='btn-slick-prev-mainimg'><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 17 49' width='16' height='40'><path d=\"M14.5824 24.2177L0.169802 1.64078C-0.133787 1.16522 -0.0203484 0.520408 0.43077 0.190628C0.896295 -0.149684 1.53586 -0.0208369 1.84885 0.469445L17 24.2034L1.85515 48.5205C1.54761 49.0143 0.909647 49.151 0.440354 48.8163C-0.0145324 48.4918 -0.134893 47.8483 0.163502 47.3692L14.5824 24.2177Z\"></path></svg></div>",
+  nextArrow: "<div class='btn-slick-next-mainimg'><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 17 49' width='16' height='40'><path d=\"M14.5824 24.2177L0.169802 1.64078C-0.133787 1.16522 -0.0203484 0.520408 0.43077 0.190628C0.896295 -0.149684 1.53586 -0.0208369 1.84885 0.469445L17 24.2034L1.85515 48.5205C1.54761 49.0143 0.909647 49.151 0.440354 48.8163C-0.0145324 48.4918 -0.134893 47.8483 0.163502 47.3692L14.5824 24.2177Z\"></path></svg></div>",
+  fade:true,
+  adaptiveHeight: true,
+  asNavFor: '.thumb-gallery',
+  responsive: [{
+    breakpoint: 992,
+    settings: {dots: true}
+  },
+  {
+    breakpoint: 300,
+    settings: {dots: true}
+  }
+  ]
+});
+$(".thumb-gallery").slick({
+  focusOnSelect: true,
+  asNavFor: '.slider-main-img-popup',
+  infinite: false,
+  slidesToShow: 6,
+  prevArrow: "<div class='btn-slick-prev'><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 17 49' width='15' height='20'><path d=\"M14.5824 24.2177L0.169802 1.64078C-0.133787 1.16522 -0.0203484 0.520408 0.43077 0.190628C0.896295 -0.149684 1.53586 -0.0208369 1.84885 0.469445L17 24.2034L1.85515 48.5205C1.54761 49.0143 0.909647 49.151 0.440354 48.8163C-0.0145324 48.4918 -0.134893 47.8483 0.163502 47.3692L14.5824 24.2177Z\"></path></svg></div>",
+  nextArrow: "<div class='btn-slick-next'><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 17 49' width='15' height='20'><path d=\"M14.5824 24.2177L0.169802 1.64078C-0.133787 1.16522 -0.0203484 0.520408 0.43077 0.190628C0.896295 -0.149684 1.53586 -0.0208369 1.84885 0.469445L17 24.2034L1.85515 48.5205C1.54761 49.0143 0.909647 49.151 0.440354 48.8163C-0.0145324 48.4918 -0.134893 47.8483 0.163502 47.3692L14.5824 24.2177Z\"></path></svg></div>",
+});
+$('.thumb-gallery').slick('slickGoTo', {{ slickToGo }},  true);
+}, 100);
+
+$(window).resize(function() {
+$(".slider-main-img-popup .zoomImg").remove();
+$('.slider-main-img-popup').slick('initializeEvents');
+$('.thumb-gallery').slick('initializeEvents');
+setTimeout(function () {
+$(".slider-main-img-popup .zoomImg").remove();
+$(".slider-main-img-popup .item").zoom({on: 'click'});
+}, 200);
+});
+</script>
+{% endif %}
+<script>
+setTimeout(function () {
+$(".slider-main-img-popup .item").zoom({on: 'click'});
+$('.slider-main-img-popup').css('opacity','1');
+}, 150);
+</script>
+</div>
