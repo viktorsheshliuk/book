@@ -4,15 +4,20 @@ pipelines:
   branches:
     stage:
       - step:
-          name: Deploy to Stage via FTP
+          name: Deploy to Stage via Parallel FTP
           deployment: Stage
           script:
             - apk add --no-cache lftp
             - >
               lftp -u $FTP_USER,$FTP_PASSWORD -e "
               set ftp:ssl-allow no;
+              set net:limit-rate 0;
+              set net:max-retries 2;
+              set net:timeout 10;
+              set ftp:parallel-files 10;
+              set ftp:parallel-transfer-count 10;
               set mirror:exclude-regex ^(\.git|bitbucket-pipelines\.yml|\.gitignore|README\.md|build|robots\.txt|\.htaccess|\.htpasswd|config\.php|admin/config\.php|admin/cyberstore\.php|cyberstore\.php|php\.ini|storage/logs/|storage/cache/|storage/session/|storage/upload/|storage/download/|storage/modification/|storage/exchange1c/|storage/geoip/|image/|vqmod/logs/|vqmod/vqcache/|install/|.*\.log|system/.*\.ocmod\.xml|.*\.xml)$;
-              mirror -R --delete --verbose ./ $TARGET_DIR;
+              mirror -R --verbose --parallel=10 ./ $TARGET_DIR;
               quit;
               " $FTP_HOST
-            - echo "Deployment to Stage completed successfully!"
+            - echo "Deployment completed successfully!"
