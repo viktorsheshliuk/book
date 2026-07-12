@@ -47,7 +47,7 @@ jobs:
             --verbose \
             --continue \
             --only-newer \
-            --parallel=8 \
+            --parallel=10 \
             --exclude-glob .git* \
             --exclude-glob .github/** \
             --exclude-glob README.md \
