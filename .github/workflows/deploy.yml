@@ -1,4 +1,4 @@
-name: Deploy OpenCart 3 via lftp
+name: Deploy OpenCart 3 via FTP (changed files only)
 
 on:
   push:
@@ -17,66 +17,79 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 2
 
       - name: Install lftp
         run: |
           sudo apt-get update
           sudo apt-get install -y lftp
 
-      - name: Deploy
+      - name: Prepare changed files list
+        run: |
+          git diff --name-only HEAD^ HEAD > changed_files.txt
+
+          echo "Changed files:"
+          cat changed_files.txt
+
+
+      - name: Deploy changed files
         env:
           FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           TARGET_DIR: ${{ secrets.TARGET_DIR }}
         run: |
+
+          cat > exclude.txt <<'EOF'
+          ^\.git
+          ^\.github
+          ^README\.md
+          ^build/
+          ^robots\.txt
+          ^\.htaccess
+          ^\.htpasswd
+          ^config\.php
+          ^admin/config\.php
+          ^admin/cyberstore\.php
+          ^cyberstore\.php
+          ^php\.ini
+          ^image/
+          ^storage/cache/
+          ^storage/logs/
+          ^storage/session/
+          ^storage/upload/
+          ^storage/download/
+          ^storage/modification/
+          ^storage/exchange1c/
+          ^storage/geoip/
+          ^vqmod/logs/
+          ^vqmod/vqcache/
+          ^install/
+          .*\.log$
+          .*\.ocmod\.xml$
+          EOF
+
+
+          grep -v -E -f exclude.txt changed_files.txt > deploy_files.txt || true
+
+
+          echo "Files to deploy:"
+          cat deploy_files.txt
+
+
           lftp -u "$FTP_USER","$FTP_PASSWORD" "$FTP_HOST" <<EOF
 
-          set cmd:fail-exit yes
-
           set ftp:ssl-allow no
-
           set net:timeout 20
           set net:max-retries 3
-          set net:reconnect-interval-base 5
-
-          set xfer:clobber on
 
           mirror -R \
             --verbose \
             --continue \
-            --only-newer \
             --parallel=10 \
-            --exclude-glob .git* \
-            --exclude-glob .github/** \
-            --exclude-glob README.md \
-            --exclude-glob LICENSE \
-            --exclude-glob build/** \
-            --exclude-glob bitbucket-pipelines.yml \
-            --exclude-glob .htaccess \
-            --exclude-glob .htpasswd \
-            --exclude-glob robots.txt \
-            --exclude-glob php.ini \
-            --exclude-glob config.php \
-            --exclude-glob admin/config.php \
-            --exclude-glob cyberstore.php \
-            --exclude-glob admin/cyberstore.php \
-            --exclude-glob install/** \
-            --exclude-glob image/** \
-            --exclude-glob storage/cache/** \
-            --exclude-glob storage/logs/** \
-            --exclude-glob storage/session/** \
-            --exclude-glob storage/upload/** \
-            --exclude-glob storage/download/** \
-            --exclude-glob storage/modification/** \
-            --exclude-glob storage/exchange1c/** \
-            --exclude-glob storage/geoip/** \
-            --exclude-glob vqmod/logs/** \
-            --exclude-glob vqmod/vqcache/** \
-            --exclude-glob *.log \
-            --exclude-glob *.ocmod.xml \
+            --files-from deploy_files.txt \
             ./ "$TARGET_DIR"
 
           quit
-          EOF
+
+EOF
