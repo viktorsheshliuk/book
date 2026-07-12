@@ -1,51 +1,78 @@
-name: Deploy via FTP
+name: Deploy OpenCart 3
 
 on:
   push:
     branches:
       - stage
 
+concurrency:
+  group: production-deploy
+  cancel-in-progress: true
+
 jobs:
   deploy:
+    name: Deploy to FTP
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Deploy to FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASSWORD }}
+
+          protocol: ftp
+          port: 21
+
           server-dir: ${{ secrets.TARGET_DIR }}
+
+          # Хранить состояние синхронизации для инкрементального деплоя
+          state-name: .ftp-deploy-sync-state.json
+
+          # Не удалять файлы, отсутствующие в репозитории
+          dangerous-clean-slate: false
+
           exclude: |
             **/.git*
-            **/.git*/**
-            .github/**
-            **/bitbucket-pipelines.yml
+            **/.github/**
+            **/.gitignore
+            **/.gitattributes
+
             **/README.md
+            **/LICENSE
             **/build/**
-            **/robots.txt
+            **/bitbucket-pipelines.yml
+
             **/.htaccess
             **/.htpasswd
+            **/robots.txt
+            **/php.ini
+
             **/config.php
             **/admin/config.php
-            **/admin/cyberstore.php
+
             **/cyberstore.php
-            **/php.ini
-            **/storage/logs/**
+            **/admin/cyberstore.php
+
+            **/install/**
+
+            **/image/**
+
             **/storage/cache/**
+            **/storage/logs/**
             **/storage/session/**
             **/storage/upload/**
             **/storage/download/**
             **/storage/modification/**
             **/storage/exchange1c/**
             **/storage/geoip/**
-            **/image/**
-            **/vqmod/logs/**
+
             **/vqmod/vqcache/**
-            **/install/**
+            **/vqmod/logs/**
+
             **/*.log
-            **/system/*.ocmod.xml
-            **/*.xml
+            **/*.ocmod.xml
