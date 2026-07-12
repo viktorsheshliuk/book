@@ -40,39 +40,34 @@ jobs:
         run: |
 
           cat > exclude.txt <<'EXCLUDE'
-          ^\.git
-          ^\.github
-          ^README\.md
-          ^LICENSE
-          ^build/
-          ^robots\.txt
-          ^\.htaccess
-          ^\.htpasswd
-          ^config\.php
-          ^admin/config\.php
-          ^admin/cyberstore\.php
-          ^cyberstore\.php
-          ^php\.ini
-
-          ^image/
-
-          ^storage/cache/
-          ^storage/logs/
-          ^storage/session/
-          ^storage/upload/
-          ^storage/download/
-          ^storage/modification/
-          ^storage/exchange1c/
-          ^storage/geoip/
-
-          ^vqmod/logs/
-          ^vqmod/vqcache/
-
-          ^install/
-
-          .*\.log$
-          .*\.ocmod\.xml$
-          EXCLUDE
+            ^\.git
+            ^\.github
+            ^README\.md
+            ^LICENSE
+            ^build/
+            ^robots\.txt
+            ^\.htaccess
+            ^\.htpasswd
+            ^config\.php
+            ^admin/config\.php
+            ^admin/cyberstore\.php
+            ^cyberstore\.php
+            ^php\.ini
+            ^image/
+            ^storage/cache/
+            ^storage/logs/
+            ^storage/session/
+            ^storage/upload/
+            ^storage/download/
+            ^storage/modification/
+            ^storage/exchange1c/
+            ^storage/geoip/
+            ^vqmod/logs/
+            ^vqmod/vqcache/
+            ^install/
+            .*\.log$
+            .*\.ocmod\.xml$
+            EXCLUDE
 
 
           grep -v -E -f exclude.txt changed_files.txt > deploy_files.txt || true
@@ -80,6 +75,9 @@ jobs:
 
           echo "Files for deploy:"
           cat deploy_files.txt
+
+          echo "Total files:"
+          wc -l deploy_files.txt
 
 
 
@@ -94,12 +92,12 @@ jobs:
         run: |
 
           cat > lftp_commands.txt <<EOF
-          set ftp:ssl-allow no
-          set net:timeout 20
-          set net:max-retries 3
-          set net:reconnect-interval-base 5
-          set cmd:parallel 10
-          EOF
+            set ftp:ssl-allow no
+            set ftp:sync-mode off
+            set net:timeout 20
+            set net:max-retries 3
+            set net:reconnect-interval-base 5
+            EOF
 
 
           while IFS= read -r file
@@ -109,7 +107,7 @@ jobs:
               continue
             fi
 
-            echo "Uploading command: $file"
+            echo "Preparing upload: $file"
 
             dirname=$(dirname "$file")
 
