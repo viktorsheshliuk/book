@@ -94,32 +94,28 @@ jobs:
         run: |
 
           cat > lftp_commands.txt <<EOF
-
           set ftp:ssl-allow no
           set net:timeout 20
           set net:max-retries 3
           set net:reconnect-interval-base 5
-
           set cmd:parallel 10
-
           EOF
 
 
-          while read file
+          while IFS= read -r file
           do
 
             if [ -z "$file" ]; then
               continue
             fi
 
+            echo "Uploading command: $file"
 
             dirname=$(dirname "$file")
-
 
             echo "mkdir -p $TARGET_DIR/$dirname" >> lftp_commands.txt
 
             echo "put \"$file\" -o \"$TARGET_DIR/$file\"" >> lftp_commands.txt
-
 
           done < deploy_files.txt
 
@@ -127,11 +123,10 @@ jobs:
           echo "quit" >> lftp_commands.txt
 
 
-          echo "LFTP commands:"
+          echo "Final LFTP commands:"
           cat lftp_commands.txt
 
 
           lftp \
             -u "$FTP_USER","$FTP_PASSWORD" \
-            "$FTP_HOST" \
-            -f lftp_commands.txt
+            "$FTP_HOST" < lftp_commands.txt

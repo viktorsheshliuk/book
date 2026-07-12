@@ -1,7 +1,7 @@
 <?php
 // Heading
 $_['heading_title']      = 'Address Book';
- 
+  
 // Text
 $_['text_account']       = 'Account';
 $_['text_address_book']  = 'Address Book Entries';
