@@ -20,4 +20,4 @@ pipelines:
               mirror -R --verbose --parallel=10 ./ $TARGET_DIR;
               quit;
               " $FTP_HOST
-            - echo "Deployment completed successfully!"
+            - echo "Deployment completed successfully!" 
