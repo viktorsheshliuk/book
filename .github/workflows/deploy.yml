@@ -1,4 +1,4 @@
-name: Deploy OpenCart 3 via FTP (changed files only)
+name: Deploy OpenCart 3 via FTP
 
 on:
   push:
@@ -11,19 +11,22 @@ concurrency:
 
 jobs:
   deploy:
-    name: Deploy to FTP
+    name: Deploy changed files
     runs-on: ubuntu-latest
 
     steps:
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
+
       - name: Install lftp
         run: |
           sudo apt-get update
           sudo apt-get install -y lftp
+
 
       - name: Get changed files
         run: |
@@ -31,6 +34,7 @@ jobs:
 
           echo "Changed files:"
           cat changed_files.txt
+
 
       - name: Prepare deploy list
         run: |
@@ -49,7 +53,9 @@ jobs:
           ^admin/cyberstore\.php
           ^cyberstore\.php
           ^php\.ini
+
           ^image/
+
           ^storage/cache/
           ^storage/logs/
           ^storage/session/
@@ -58,17 +64,23 @@ jobs:
           ^storage/modification/
           ^storage/exchange1c/
           ^storage/geoip/
+
           ^vqmod/logs/
           ^vqmod/vqcache/
+
           ^install/
+
           .*\.log$
           .*\.ocmod\.xml$
           EXCLUDE
 
+
           grep -v -E -f exclude.txt changed_files.txt > deploy_files.txt || true
 
-          echo "Files to deploy:"
+
+          echo "Files for deploy:"
           cat deploy_files.txt
+
 
 
       - name: Deploy via FTP
@@ -78,23 +90,48 @@ jobs:
           FTP_USER: ${{ secrets.FTP_USER }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
           TARGET_DIR: ${{ secrets.TARGET_DIR }}
+
         run: |
 
-          while read file; do
+          cat > lftp_commands.txt <<EOF
+
+          set ftp:ssl-allow no
+          set net:timeout 20
+          set net:max-retries 3
+          set net:reconnect-interval-base 5
+
+          set cmd:parallel 10
+
+          EOF
+
+
+          while read file
+          do
 
             if [ -z "$file" ]; then
               continue
             fi
 
-            echo "Uploading: $file"
 
-            lftp -u "$FTP_USER","$FTP_PASSWORD" "$FTP_HOST" -e "
-              set ftp:ssl-allow no;
-              set net:timeout 20;
-              set net:max-retries 3;
-              mkdir -p $TARGET_DIR/$(dirname $file);
-              put $file -o $TARGET_DIR/$file;
-              quit;
-            "
+            dirname=$(dirname "$file")
+
+
+            echo "mkdir -p $TARGET_DIR/$dirname" >> lftp_commands.txt
+
+            echo "put \"$file\" -o \"$TARGET_DIR/$file\"" >> lftp_commands.txt
+
 
           done < deploy_files.txt
+
+
+          echo "quit" >> lftp_commands.txt
+
+
+          echo "LFTP commands:"
+          cat lftp_commands.txt
+
+
+          lftp \
+            -u "$FTP_USER","$FTP_PASSWORD" \
+            "$FTP_HOST" \
+            -f lftp_commands.txt
