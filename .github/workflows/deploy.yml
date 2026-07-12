@@ -6,11 +6,12 @@ on:
       - stage
 
 concurrency:
-  group: production-deploy
+  group: stage-deploy
   cancel-in-progress: true
 
 jobs:
   deploy:
+    name: Deploy to FTP
     runs-on: ubuntu-latest
 
     steps:
@@ -24,7 +25,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y lftp
 
-      - name: Prepare changed files list
+      - name: Get changed files
         run: |
           git diff --name-only HEAD^ HEAD > changed_files.txt
 
@@ -32,18 +33,14 @@ jobs:
           cat changed_files.txt
 
 
-      - name: Deploy changed files
-        env:
-          FTP_HOST: ${{ secrets.FTP_HOST }}
-          FTP_USER: ${{ secrets.FTP_USER }}
-          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          TARGET_DIR: ${{ secrets.TARGET_DIR }}
+      - name: Prepare deploy list
         run: |
 
-          cat > exclude.txt <<'EOF'
+          cat > exclude.txt <<'EXCLUDE'
           ^\.git
           ^\.github
           ^README\.md
+          ^LICENSE
           ^build/
           ^robots\.txt
           ^\.htaccess
@@ -53,7 +50,9 @@ jobs:
           ^admin/cyberstore\.php
           ^cyberstore\.php
           ^php\.ini
+
           ^image/
+
           ^storage/cache/
           ^storage/logs/
           ^storage/session/
@@ -62,12 +61,15 @@ jobs:
           ^storage/modification/
           ^storage/exchange1c/
           ^storage/geoip/
+
           ^vqmod/logs/
           ^vqmod/vqcache/
+
           ^install/
+
           .*\.log$
           .*\.ocmod\.xml$
-          EOF
+          EXCLUDE
 
 
           grep -v -E -f exclude.txt changed_files.txt > deploy_files.txt || true
@@ -77,11 +79,23 @@ jobs:
           cat deploy_files.txt
 
 
-          lftp -u "$FTP_USER","$FTP_PASSWORD" "$FTP_HOST" <<EOF
+      - name: Deploy changed files via FTP
+        if: hashFiles('deploy_files.txt') != ''
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USER: ${{ secrets.FTP_USER }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          TARGET_DIR: ${{ secrets.TARGET_DIR }}
+        run: |
+
+          lftp -u "$FTP_USER","$FTP_PASSWORD" "$FTP_HOST" <<LFTP
 
           set ftp:ssl-allow no
           set net:timeout 20
           set net:max-retries 3
+          set net:reconnect-interval-base 5
+
+          set xfer:clobber on
 
           mirror -R \
             --verbose \
@@ -92,4 +106,4 @@ jobs:
 
           quit
 
-EOF
+LFTP
