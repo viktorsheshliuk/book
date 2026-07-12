@@ -39,35 +39,35 @@ jobs:
       - name: Prepare deploy list
         run: |
 
-          cat > exclude.txt <<'EXCLUDE'
-            ^\.git
-            ^\.github
-            ^README\.md
-            ^LICENSE
-            ^build/
-            ^robots\.txt
-            ^\.htaccess
-            ^\.htpasswd
-            ^config\.php
-            ^admin/config\.php
-            ^admin/cyberstore\.php
-            ^cyberstore\.php
-            ^php\.ini
-            ^image/
-            ^storage/cache/
-            ^storage/logs/
-            ^storage/session/
-            ^storage/upload/
-            ^storage/download/
-            ^storage/modification/
-            ^storage/exchange1c/
-            ^storage/geoip/
-            ^vqmod/logs/
-            ^vqmod/vqcache/
-            ^install/
-            .*\.log$
-            .*\.ocmod\.xml$
-            EXCLUDE
+          cat > exclude.txt <<EOF
+^\.git
+^\.github
+^README\.md
+^LICENSE
+^build/
+^robots\.txt
+^\.htaccess
+^\.htpasswd
+^config\.php
+^admin/config\.php
+^admin/cyberstore\.php
+^cyberstore\.php
+^php\.ini
+^image/
+^storage/cache/
+^storage/logs/
+^storage/session/
+^storage/upload/
+^storage/download/
+^storage/modification/
+^storage/exchange1c/
+^storage/geoip/
+^vqmod/logs/
+^vqmod/vqcache/
+^install/
+.*\.log$
+.*\.ocmod\.xml$
+EOF
 
 
           grep -v -E -f exclude.txt changed_files.txt > deploy_files.txt || true
@@ -76,13 +76,13 @@ jobs:
           echo "Files for deploy:"
           cat deploy_files.txt
 
+
           echo "Total files:"
           wc -l deploy_files.txt
 
 
 
       - name: Deploy via FTP
-        if: hashFiles('deploy_files.txt') != ''
         env:
           FTP_HOST: ${{ secrets.FTP_HOST }}
           FTP_USER: ${{ secrets.FTP_USER }}
@@ -91,27 +91,27 @@ jobs:
 
         run: |
 
+          if [ ! -s deploy_files.txt ]; then
+            echo "No files to deploy"
+            exit 0
+          fi
+
+
           cat > lftp_commands.txt <<EOF
-            set ftp:ssl-allow no
-            set ftp:sync-mode off
-            set net:timeout 20
-            set net:max-retries 3
-            set net:reconnect-interval-base 5
-            EOF
+set ftp:ssl-allow no
+set ftp:sync-mode off
+set net:timeout 20
+set net:max-retries 3
+set net:reconnect-interval-base 5
+EOF
 
 
           while IFS= read -r file
           do
 
-            if [ -z "$file" ]; then
-              continue
-            fi
-
-            echo "Preparing upload: $file"
-
             dirname=$(dirname "$file")
 
-            echo "mkdir -p $TARGET_DIR/$dirname" >> lftp_commands.txt
+            echo "mkdir -p \"$TARGET_DIR/$dirname\"" >> lftp_commands.txt
 
             echo "put \"$file\" -o \"$TARGET_DIR/$file\"" >> lftp_commands.txt
 
@@ -121,7 +121,7 @@ jobs:
           echo "quit" >> lftp_commands.txt
 
 
-          echo "Final LFTP commands:"
+          echo "FTP commands:"
           cat lftp_commands.txt
 
 
