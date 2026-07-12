@@ -32,7 +32,6 @@ jobs:
           echo "Changed files:"
           cat changed_files.txt
 
-
       - name: Prepare deploy list
         run: |
 
@@ -50,9 +49,7 @@ jobs:
           ^admin/cyberstore\.php
           ^cyberstore\.php
           ^php\.ini
-
           ^image/
-
           ^storage/cache/
           ^storage/logs/
           ^storage/session/
@@ -61,25 +58,20 @@ jobs:
           ^storage/modification/
           ^storage/exchange1c/
           ^storage/geoip/
-
           ^vqmod/logs/
           ^vqmod/vqcache/
-
           ^install/
-
           .*\.log$
           .*\.ocmod\.xml$
           EXCLUDE
 
-
           grep -v -E -f exclude.txt changed_files.txt > deploy_files.txt || true
-
 
           echo "Files to deploy:"
           cat deploy_files.txt
 
 
-      - name: Deploy changed files via FTP
+      - name: Deploy via FTP
         if: hashFiles('deploy_files.txt') != ''
         env:
           FTP_HOST: ${{ secrets.FTP_HOST }}
@@ -88,22 +80,21 @@ jobs:
           TARGET_DIR: ${{ secrets.TARGET_DIR }}
         run: |
 
-          lftp -u "$FTP_USER","$FTP_PASSWORD" "$FTP_HOST" <<LFTP
+          while read file; do
 
-          set ftp:ssl-allow no
-          set net:timeout 20
-          set net:max-retries 3
-          set net:reconnect-interval-base 5
+            if [ -z "$file" ]; then
+              continue
+            fi
 
-          set xfer:clobber on
+            echo "Uploading: $file"
 
-          mirror -R \
-            --verbose \
-            --continue \
-            --parallel=10 \
-            --files-from deploy_files.txt \
-            ./ "$TARGET_DIR"
+            lftp -u "$FTP_USER","$FTP_PASSWORD" "$FTP_HOST" -e "
+              set ftp:ssl-allow no;
+              set net:timeout 20;
+              set net:max-retries 3;
+              mkdir -p $TARGET_DIR/$(dirname $file);
+              put $file -o $TARGET_DIR/$file;
+              quit;
+            "
 
-          quit
-
-LFTP
+          done < deploy_files.txt
