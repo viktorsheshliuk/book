@@ -645,7 +645,7 @@ class ModelExtensionModuleCyberNsmenu extends Model {
 			'spctext' 			=> $data['spctext'],
 			'additional_menu' 	=> $data['additional_menu'],
 			'new_blank' 		=> '0',
-			'add_html' 			=> (isset($add_html)) ? html_entity_decode($add_html[$this->lang_id], ENT_QUOTES, 'UTF-8'):false,
+			'add_html' 			=> (isset($add_html) && ($add_html != 'false')) ? html_entity_decode($add_html[$this->lang_id], ENT_QUOTES, 'UTF-8'):false,
 		);
 		return $type_link_data['result_menu_category'];
 
