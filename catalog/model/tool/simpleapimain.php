@@ -115,6 +115,39 @@ class ModelToolSimpleApiMain extends Model {
         return $values;
     }
 
+    public function getNovaPoshtaRegions($countryId) {
+        $values = array(
+            array(
+                'id'   => '',
+                'text' => $this->language->get('text_select')
+            )
+        );
+
+        $this->load->model('extension/module/shippingdata');
+
+        $results = $this->model_extension_module_shippingdata->getNovaPoshtaRegions();
+
+        // Получаем текущий код языка из сессии
+        $lang_code = isset($this->session->data['language']) ? $this->session->data['language'] : $this->config->get('config_language');
+
+        foreach ($results as $result){
+               if ($result['Ref'] == '71508128-9b87-11de-822f-000c2965ae0e') continue; // пропускаем значение АРК 
+                $values[] = array(
+                    'id'   => $result['Ref'],
+                    'text' => $lang_code == 'uk-ua' ? $result['Description'] : $result['DescriptionRu'] 
+                ); 
+        }    
+
+        if (!$results) {
+            $values[] = array(
+                'id'   => 0,
+                'text' => $this->language->get('text_none')
+            );
+        }
+
+        return $values;
+    }
+    
     public function getZones($countryId) {
         $values = array(
             array(

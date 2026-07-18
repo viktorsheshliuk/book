@@ -11,6 +11,10 @@ class ControllerCheckoutSimpleCheckout extends SimpleController {
 
     public function index($args = null) {
 
+        /* START Shipping Data */
+    		$this->document->addStyle('catalog/view/theme/default/stylesheet/shippingdata.css');
+    	/* END Shipping Data */
+
         $this->loadLibrary('simple/simplecheckout');
 
         $settingsGroup = !empty($args['group']) ? $args['group'] : (!empty($this->request->get['group']) ? $this->request->get['group'] : $this->config->get('simple_default_checkout_group'));
