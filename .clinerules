@@ -1,0 +1,76 @@
+- Всегда отвечай пользователю на русском языке (ru).
+- Always reply to the user in Russian (ru).
+
+# Стандарты разработки OpenCart 3
+
+## MVC-структура
+- Контроллеры хранятся в `catalog/controller/` (фронтенд) и `admin/controller/` (админка).
+- Модели хранятся в `catalog/model/` и `admin/model/`.
+- Представления (шаблоны) — в `catalog/view/theme/*/template/` и `admin/view/template/`.
+- Языковые файлы — в `catalog/language/` и `admin/language/`.
+
+## Язык
+- В магазине и админке используется только **украинский язык (uk-ua)**.
+- Все языковые файлы находятся в `catalog/language/uk-ua/` и `admin/language/uk-ua/`.
+- При создании новых модулей/расширений языковые файлы создаются только для `uk-ua`.
+
+## Именование файлов и классов
+- Файлы именуются в snake_case: `shippingdata.php`, `cyber_nsmenu.php`.
+- Классы именуются в CamelCase с учётом пути: `ModelExtensionModuleShippingdata`, `ControllerExtensionModuleShippingdata`.
+- Название класса должно совпадать с путём к файлу относительно `controller/`, `model/` или `view/template/`.
+- Методы в контроллерах/моделях именуются в camelCase: `getShippingData()`, `install()`.
+
+## Контроллеры
+- Каждый публичный метод контроллера — это отдельная страница/роут.
+- Метод `index()` — действие по умолчанию.
+- Данные в шаблон передаются через `$data['key']`, в конце вызывается `$this->load->view(...)`.
+- Для загрузки моделей: `$this->load->model('extension/module/shippingdata')`.
+- Для загрузки языка: `$this->load->language('extension/module/shippingdata')`.
+
+## Модели
+- Модели работают с БД через `$this->db->query()`, `$this->db->escape()`.
+- Для кэширования используется `$this->cache->get()` / `$this->cache->set()`.
+- Названия таблиц в БД — с префиксом `DB_PREFIX` (константа): `DB_PREFIX . 'setting'`.
+
+## Шаблоны (Twig)
+- Файлы шаблонов имеют расширение `.twig`.
+- Вывод переменных: `{{ variable }}`.
+- Экранированный вывод: `{{ variable|e }}`.
+- Циклы: `{% for item in items %} ... {% endfor %}`.
+- Условия: `{% if condition %} ... {% endif %}`.
+- Наследование шаблонов: `{% extends 'common/header.twig' %}`.
+
+## Языковые файлы
+- Каждый языковой файл возвращает массив `$_`.
+- Ключи — в snake_case: `$_['entry_name']`, `$_['text_shipping']`.
+- Языковые переменные загружаются через `$this->load->language(...)` и используются в контроллере как `$data['text_...'] = $this->language->get('text_...')`.
+
+## Модификаторы (OCMod)
+- XML-файлы модификаторов хранятся в `system/` с расширением `.ocmod.xml`.
+- После установки модификатора нужно очистить кэш модификаций в админке: Extensions → Modifications → Refresh.
+- Кэш модификаций хранится в `storage/modification/`.
+
+## Работа с БД
+- Запросы выполняются через `$this->db->query($sql)`.
+- Для экранирования строк: `$this->db->escape($value)`.
+- Для получения последнего ID: `$this->db->getLastId()`.
+- Количество затронутых строк: `$this->db->countAffected()`.
+
+## Настройки (Settings)
+- Настройки модулей хранятся в таблице `setting` с `code = 'module_xxx'`.
+- Загрузка настроек: `$this->load->model('setting/setting')` → `$this->model_setting_setting->getSetting('module_xxx')`.
+- Сохранение настроек: `$this->model_setting_setting->editSetting('module_xxx', $data)`.
+
+## URL и роутинг
+- URL формируются через `$this->url->link('route', 'params', 'protocol')`.
+- В админке: `$this->url->link('extension/module/shippingdata', 'user_token=' . $this->session->data['user_token'], true)`.
+- На фронте: `$this->url->link('extension/module/shippingdata', '', true)`.
+
+## Сессии
+- Данные сессии: `$this->session->data['key']`.
+- В админке проверка прав доступа: `$this->user->hasPermission('modify', 'extension/module/shippingdata')`.
+
+## Обработка ошибок
+- Логирование: `$this->log->write('Error message')`.
+- Логи хранятся в `storage/logs/`.
+- Для отладки можно использовать `$this->log->write($variable)`.

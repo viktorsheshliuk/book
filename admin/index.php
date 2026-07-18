@@ -1,4 +1,5 @@
 <?php
+ini_set('display_errors', 1);
 // Version
 define('VERSION', '3.0.3.7');
 define('VERSION_CORE', 'ocStore');
