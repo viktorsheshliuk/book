@@ -1001,6 +1001,15 @@ class ControllerCheckoutSimpleCheckout extends SimpleController {
         $data['payment_city']           = $payment_address['city'];
         $data['payment_postcode']       = $payment_address['postcode'];
         $data['payment_zone']           = $payment_address['zone'];
+
+        if (empty($data['payment_zone']) && !empty($payment_address['zone_id'])) {
+            $np_query = $this->db->query("SELECT DescriptionRu, Description FROM `" . DB_PREFIX . "novaposhta_regions` WHERE Ref = '" . $this->db->escape($payment_address['zone_id']) . "'");
+            
+            if ($np_query->num_rows) {
+                    $data['payment_zone'] = !empty($np_query->row['Description']) ? $np_query->row['Description'] . ' область': $np_query->row['DescriptionRu'] . ' область';
+            }
+        }
+
         $data['payment_zone_id']        = $payment_address['zone_id'];
         $data['payment_country']        = $payment_address['country'];
         $data['payment_country_id']     = $payment_address['country_id'];
@@ -1030,6 +1039,14 @@ class ControllerCheckoutSimpleCheckout extends SimpleController {
             $data['shipping_city']           = $shipping_address['city'];
             $data['shipping_postcode']       = $shipping_address['postcode'];
             $data['shipping_zone']           = $shipping_address['zone'];
+
+            if (empty($data['shipping_zone']) && !empty($shipping_address['zone_id'])) {
+                $np_query = $this->db->query("SELECT DescriptionRu, Description FROM `" . DB_PREFIX . "novaposhta_regions` WHERE Ref = '" . $this->db->escape($shipping_address['zone_id']) . "'");
+                    if ($np_query->num_rows) {
+                        $data['shipping_zone'] = !empty($np_query->row['Description']) ? $np_query->row['Description'] . ' область' : $np_query->row['DescriptionRu'] . ' область';
+                }
+            }
+
             $data['shipping_zone_id']        = $shipping_address['zone_id'];
             $data['shipping_country']        = $shipping_address['country'];
             $data['shipping_country_id']     = $shipping_address['country_id'];
