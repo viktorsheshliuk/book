@@ -1,0 +1,124 @@
+{{ header }}{{ column_left }}
+<div id="content">
+  <div class="page-header">
+    <div class="container-fluid">
+      <div class="pull-right">
+        <button type="submit" form="form-module" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+        <button type="button" id="button-load-categories" data-toggle="tooltip" title="{{ button_load_categories }}" class="btn btn-info"><i class="fa fa-refresh"></i></button>
+        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
+      </div>
+      <h1>{{ heading_title }}</h1>
+      <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+        <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="container-fluid">
+    {% if error_warning %}
+    <div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}
+      <button type="button" class="close" data-dismiss="alert">&times;</button>
+    </div>
+    {% endif %}
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_edit }}</h3>
+      </div>
+      <div class="panel-body">
+        <form action="{{ action|raw }}" method="post" enctype="multipart/form-data" id="form-module" class="form-horizontal">
+          <div class="form-group">
+            <div class="col-sm-12">
+              <div id="mapping-wrapper">
+                <p class="text-muted">{{ text_no_categories }}</p>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript"><!--
+function renderMapping(categories, siteCategories, mapping) {
+  var html = '';
+  if (categories.length === 0) {
+    html = '<p class="text-muted">{{ text_no_categories }}</p>';
+    $('#mapping-wrapper').html(html);
+    return;
+  }
+  
+  html += '<div class="table-responsive">';
+  html += '<table class="table table-bordered table-hover">';
+  html += '<thead><tr>';
+  html += '<td class="text-left">{{ entry_feed_category }}</td>';
+  html += '<td class="text-left">{{ entry_site_category }}</td>';
+  html += '</tr></thead>';
+  html += '<tbody>';
+  
+  for (var i = 0; i < categories.length; i++) {
+    var cat = categories[i];
+    var indent = '';
+    for (var j = 0; j < cat.indent; j++) {
+      indent += '&nbsp;&nbsp;&nbsp;';
+    }
+    
+    html += '<tr>';
+    html += '<td class="text-left">' + indent + cat.name + ' <span class="text-muted">(ID: ' + cat.feed_id + ')</span></td>';
+    html += '<td class="text-left">';
+    html += '<select name="mapping[' + cat.feed_id + ']" class="form-control" style="width:auto;display:inline-block;">';
+    html += '<option value="0">-- Не обрано --</option>';
+    
+    for (var k = 0; k < siteCategories.length; k++) {
+      var sc = siteCategories[k];
+      var selected = '';
+      if (cat.mapped_id == sc.category_id) {
+        selected = ' selected="selected"';
+      }
+      html += '<option value="' + sc.category_id + '"' + selected + '>' + sc.name + '</option>';
+    }
+    
+    html += '</select>';
+    html += '</td>';
+    html += '</tr>';
+  }
+  
+  html += '</tbody>';
+  html += '</table>';
+  html += '</div>';
+  
+  $('#mapping-wrapper').html(html);
+}
+
+$(document).ready(function() {
+  $('#button-load-categories').on('click', function() {
+    var btn = $(this);
+    btn.find('i').addClass('fa-spin');
+    btn.prop('disabled', true);
+    
+    $.ajax({
+      url: '{{ load_categories_url|raw }}',
+      type: 'get',
+      dataType: 'json',
+      success: function(json) {
+        if (json.error) {
+          alert(json.error);
+          return;
+        }
+        
+        if (json.success) {
+          renderMapping(json.categories, json.site_categories, json.mapping);
+        }
+      },
+      error: function(xhr, ajaxOptions, thrownError) {
+        alert(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+      },
+      complete: function() {
+        btn.find('i').removeClass('fa-spin');
+        btn.prop('disabled', false);
+      }
+    });
+  });
+});
+//--></script>
+{{ footer }}

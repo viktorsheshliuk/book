@@ -2,6 +2,7 @@
 config.php
 admin/config.php
 price/import/config.php
+price/import/feed_import_mapping.php
 php.ini
 
 cyberstore.php

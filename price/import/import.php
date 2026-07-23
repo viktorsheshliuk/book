@@ -346,6 +346,16 @@ function import_feed() {
         $categories_xml[$cat_id] = ['parent_id' => $parent_id, 'name' => $name];
     }
 
+    // Загружаем маппинг категорий (если есть)
+    $category_mapping = [];
+    $map_file = __DIR__ . '/feed_import_mapping.php';
+    if (file_exists($map_file)) {
+        $category_mapping = require $map_file;
+        if (!empty($category_mapping)) {
+            log_msg("Загружен маппинг категорий: " . count($category_mapping) . " записей");
+        }
+    }
+
     uasort($categories_xml, function($a, $b) {
         if ($a['parent_id'] == 0 && $b['parent_id'] != 0) return -1;
         if ($a['parent_id'] != 0 && $b['parent_id'] == 0) return 1;
@@ -362,6 +372,14 @@ function import_feed() {
     }
 
     foreach ($categories_xml as $xml_id => $cat_data) {
+        // Если для этой категории есть маппинг — используем его напрямую
+        if (isset($category_mapping[$xml_id])) {
+            $cat_oc_id = (int)$category_mapping[$xml_id];
+            $category_map[$xml_id] = $cat_oc_id;
+            log_msg("  Маппинг: категория фида ID {$xml_id} ({$cat_data['name']}) → категория сайта ID {$cat_oc_id}");
+            continue;
+        }
+
         $parent_oc_id = 0;
         if ($cat_data['parent_id'] > 0 && isset($category_map[$cat_data['parent_id']])) {
             $parent_oc_id = $category_map[$cat_data['parent_id']];
