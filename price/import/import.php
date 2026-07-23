@@ -473,11 +473,11 @@ function import_feed() {
     $updated = 0;
     $batch_data = [];
 
-    $counter = 0;
+    //$counter = 0;
 
     foreach ($offers as $offer) {
         $counter++;
-        if ($counter > 1) break;  // 1 товар для теста
+        //if ($counter > 1) break;  // 1 товар для теста
 
         $model = trim((string)$offer->model);
         if (empty($model)) continue;
