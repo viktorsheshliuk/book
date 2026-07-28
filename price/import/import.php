@@ -471,10 +471,10 @@ function import_feed() {
         $models_in = implode(',', $escaped_models);
 
         q("UPDATE " . DB_PREFIX . "product SET status = '0', date_modified = NOW() 
-           WHERE quantity <= '0' AND model NOT IN ({$models_in}) AND status = '1'");
+           WHERE model NOT IN ({$models_in}) AND status = '1'");
         $total_deactivated += db()->affected_rows;
     }
-    log_msg("Деактивировано товаров (не в фиде, quantity=0): " . $total_deactivated);
+    log_msg("Деактивировано товаров (товаров нет в фиде): " . $total_deactivated);
 
     // ======== ОБНОВЛЕНИЕ/ДОБАВЛЕНИЕ ТОВАРОВ ========
     log_msg("--- Обновление/добавление товаров ---");
