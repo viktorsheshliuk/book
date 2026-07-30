@@ -15,8 +15,33 @@ require_once __DIR__ . '/config.php';
 $_db = null;
 
 function log_msg($msg) {
+    static $log_file = null;
+    
+    if ($log_file === null) {
+        $now = time();
+        $date_dir = date('d_m_Y', $now);
+        $time_prefix = date('H_i', $now);
+        $dir_path = LOG_DIR . '/' . $date_dir;
+        $log_file = $dir_path . '/' . $time_prefix . '_' . $date_dir . '.log';
+        
+        if (!is_dir($dir_path)) {
+            if (!mkdir($dir_path, 0755, true)) {
+                $log_file = false;
+                $err_msg = "Ошибка: не удалось создать директорию для логов: {$dir_path}";
+                if (PHP_SAPI === 'cli') {
+                    echo "[{$err_msg}]\n";
+                } else {
+                    echo htmlspecialchars($err_msg) . "<br>\n";
+                }
+            }
+        }
+    }
+
     $date = date('Y-m-d H:i:s');
-    file_put_contents(LOG_FILE, "[{$date}] {$msg}\n", FILE_APPEND | LOCK_EX);
+    if ($log_file !== false) {
+        file_put_contents($log_file, "[{$date}] {$msg}\n", FILE_APPEND | LOCK_EX);
+    }
+    
     // В веб-режиме выводим с <br> для переноса строк в браузере
     if (PHP_SAPI !== 'cli') {
         echo "[{$date}] " . htmlspecialchars($msg) . "<br>\n";
