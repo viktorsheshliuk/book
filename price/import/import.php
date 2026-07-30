@@ -138,6 +138,14 @@ function load_feed() {
 function download_image($url) {
     if (empty($url)) return '';
 
+    // Игнорируем URL без имени файла (заканчивается на / или без расширения изображения)
+    $path = parse_url($url, PHP_URL_PATH);
+    $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+    $allowed_ext = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
+    if (empty($ext) || !in_array($ext, $allowed_ext)) {
+        return '';
+    }
+
     // Извлекаем путь из URL вида: .../image/catalog/... → catalog/...
     // или любой другой URL → import/{hash}.jpg
     $rel_path = '';
