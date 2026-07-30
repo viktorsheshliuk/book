@@ -488,17 +488,16 @@ function import_feed() {
     log_msg("--- Деактивация товаров не в фиде ---");
 
     $feed_model_list = array_keys($feed_models);
-    $model_chunks = array_chunk($feed_model_list, BATCH_SIZE);
     $total_deactivated = 0;
 
-    foreach ($model_chunks as $chunk) {
-        $escaped_models = array_map(function($m) { return "'" . esc($m) . "'"; }, $chunk);
+    if (!empty($feed_model_list)) {
+        $escaped_models = array_map(function($m) { return "'" . esc($m) . "'"; }, $feed_model_list);
         $models_in = implode(',', $escaped_models);
-
         q("UPDATE " . DB_PREFIX . "product SET status = '0', date_modified = NOW() 
            WHERE model NOT IN ({$models_in}) AND status = '1'");
-        $total_deactivated += db()->affected_rows;
+        $total_deactivated = db()->affected_rows;
     }
+    
     log_msg("Деактивировано товаров (товаров нет в фиде): " . $total_deactivated);
 
     // ======== ОБНОВЛЕНИЕ/ДОБАВЛЕНИЕ ТОВАРОВ ========
