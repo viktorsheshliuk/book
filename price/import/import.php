@@ -6,6 +6,10 @@
  * Сопоставление по полю model (артикул)
  * Пакетная обработка (batch) для больших файлов
  * Товары не в фиде и с quantity=0 -> status=0
+ *
+ * Если сайт/фид/изображения закрыты htpasswd (HTTP Basic Auth),
+ * укажите FEED_USERNAME и FEED_PASSWORD в config.php —
+ * скрипт передаст их при скачивании фида и изображений.
  */
 
 // Подключаем конфигурацию
@@ -86,6 +90,46 @@ function get_languages() {
     return $langs;
 }
 
+function http_get($url, $timeout = 60) {
+    // Если заданы креды для Basic Auth — используем curl с авторизацией
+    if (defined('FEED_USERNAME') && FEED_USERNAME !== '') {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_USERPWD, FEED_USERNAME . ':' . FEED_PASSWORD);
+        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+        $data = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        if ($http_code != 200) {
+            return false;
+        }
+        return $data;
+    }
+
+    // Без авторизации — сначала file_get_contents, потом curl
+    $data = @file_get_contents($url);
+    if ($data !== false) {
+        return $data;
+    }
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    $data = curl_exec($ch);
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    if ($http_code != 200) {
+        return false;
+    }
+    return $data;
+}
+
 function load_feed() {
     // Если FEED_SOURCE - URL, скачиваем с кешированием
     if (strpos(FEED_SOURCE, 'http://') === 0 || strpos(FEED_SOURCE, 'https://') === 0) {
@@ -95,22 +139,10 @@ function load_feed() {
             return file_get_contents(FEED_CACHE_FILE);
         }
         log_msg("Скачивание фида: " . FEED_SOURCE);
-        $data = @file_get_contents(FEED_SOURCE);
+        $data = http_get(FEED_SOURCE, 60);
         if ($data === false) {
-            // Пробуем через curl
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, FEED_SOURCE);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 60);
-            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            $data = curl_exec($ch);
-            $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-            curl_close($ch);
-            if ($http_code != 200) {
-                log_msg("ОШИБКА: HTTP {$http_code} при скачивании фида");
-                return null;
-            }
+            log_msg("ОШИБКА: Не удалось скачать фид (HTTP 401/403? Проверьте FEED_USERNAME/FEED_PASSWORD в config.php)");
+            return null;
         }
         if (empty($data)) {
             log_msg("ОШИБКА: Пустой ответ от фида");
@@ -174,23 +206,11 @@ function download_image($url) {
         }
     }
 
-    // Скачиваем
-    $data = @file_get_contents($url);
-    if ($data === false) {
-        // Пробуем curl
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 15);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        $data = curl_exec($ch);
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        if ($http_code != 200 || empty($data)) {
-            log_msg("  Не удалось скачать: {$url} (HTTP {$http_code})");
-            return '';
-        }
+    // Скачиваем (с учётом Basic Auth, если заданы креды)
+    $data = http_get($url, 15);
+    if ($data === false || empty($data)) {
+        log_msg("  Не удалось скачать: {$url}");
+        return '';
     }
 
     if (file_put_contents($local_path, $data) === false) {
